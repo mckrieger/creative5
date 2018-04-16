@@ -3,26 +3,30 @@
 <form v-on:submit.prevent="register">
   <p> Create an account</p>
   <input class="wide" v-model="name" placeholder="First and Last Name"><br/>
+  <input class="wide" v-model="username" placeholder="Username"><br/>
   <input class="wide" v-model="email" placeholder="Email Address"><br/>
   <input class="wide" type="password" v-model="password" placeholder="Password"><br/>
+
 
   <p class="detail">Here at Roomie, you can look for roommates, give reviews, or just browse what's out there.<br/>If you are looking for a roommate, we suggest you check the box below so people know more about you.</p>
   <label for="extra">Fill out extra info? </label><input id="extra" type="checkbox" v-model="extra"></input>
   <div id="extraInfo" v-if="extra">
+  <hr/>
     <div id="gender">
+      <label>What is your gender?</label><br/>
       <button id="male" v-on:click="gender = 'male'" v-bind:class="{ selected: gender == 'male' }" >Male</button> <button id="female" v-on:click="gender = 'female'" v-bind:class="{ selected: gender == 'female'}">Female</button>
     </div>
   <label for="age">How old are you?</label>
   <p>{{age}}</p><input id="clean" type="range" min="17" max="80" value="23" step="1" class="wide" v-model="age" ></input><br/>
-
-    <label for="snore">Do you snore? </label><input id="snore" type="checkbox" v-model="snore"></input><br/>
-
+    <div id="snore">
+      <label for="snore">Do you snore? </label><input id="snore" type="checkbox" v-model="snore"></input><br/>
+    </div>
     <label for="clean">How clean do you like the apartment to be? (10 is spotless)</label>
     <p>{{clean}}</p><input id="clean" type="range" min="1" max="10" value="5" step="1" class="wide" v-model="clean" ></input><br/>
     <label for="hobbies">What are you interested in? (Hobbies, etc.) </label><br/><input id="hobbies" class="wide" v-model="hobbies" placeholder='"Football", "Board Games", etc."'></input><br/>
     <label for="quiet">How talkative/reserved are you?</label><br/><input id="quiet" class="wide" v-model="quiet" placeholder='"I keep to myself", "I talk a lot"'></input><br/>
     <label for="time">How much time do you usually spend in the apartment?</label><br/><input id="time" class="wide" v-model="time" placeholder='"I only sleep there", "My bf and I are always there"'></input><br/>
-    <label for="expectations">What do you want your interactions with your roommate to look like? (What are your expectations?) </label><br/><input id="expectation" class="wide" v-model="expectation" placeholder='"I want to be best friends", "I just need to tolerate them"'></input><br/>
+    <label for="expectations">What do you want your interactions with your roommate to look like?<br/> (What are your expectations?) </label><br/><input id="expectation" class="wide" v-model="expectation" placeholder='"I want to be best friends", "I just need to tolerate them"'></input><br/>
     <label for="ideal">What is your ideal roommate like? </label><br/><input id="ideal" class="wide" v-model="ideal" placeholder='"Enthusiastic, but respectful of my sleep"'></input><br/>
     <label for="other">What else should we know about you? </label><br/><input id="other" class="wide" v-model="other" placeholder='"I work nightshifts", "I have a dog", etc. '></input><br/>
 
@@ -44,11 +48,11 @@
        password: '',
        name: '',
        gender: '',
-       age: '_',
+       age: '25',
        snoring: false,
        time: '',
        extra: false,
-       clean: '_',
+       clean: '5',
        hobbies: '',
        quiet: '',
        expectation: '',
@@ -102,7 +106,7 @@
  }
 
  input {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   margin-top: 5px;
  }
 
@@ -110,9 +114,9 @@
   width: 300px;
  }
 
- label {
- margin-top: 30px;
- }
+#gender, #snore {
+padding-bottom:30px;
+}
 
  .segment{
  padding: 30px;

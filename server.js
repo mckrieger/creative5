@@ -89,8 +89,22 @@ app.post('/api/users', (req, res) => {
     }
     return bcrypt.hash(req.body.password, saltRounds);
   }).then(hash => {
-    return knex('users').insert({email: req.body.email, hash: hash, username:req.body.username,
-				 name:req.body.name, role: 'user'});
+    return knex('users').insert({email: req.body.email,
+         hash: hash,
+         username:req.body.username,
+				 name:req.body.name,
+         role: 'user',
+         gender: req.body.gender,
+         age: req.body.age,
+         snoring: req.body.snoring,
+         time: req.body.time,
+         extra: req.body.extra,
+         clean: req.body.clean,
+         hobbies: req.body.hobbies,
+         quiet: req.body.quiet,
+         expectation: req.body.expectation,
+         other: req.body.other
+       });
   }).then(ids => {
     return knex('users').where('id',ids[0]).first().select('username','name','id');
   }).then(user => {

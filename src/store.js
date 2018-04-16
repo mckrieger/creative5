@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-
+import router from './router';
 import axios from 'axios';
 
 Vue.use(Vuex);
@@ -112,8 +112,9 @@ export default new Vuex.Store({
 	context.commit('setToken',response.data.token);
 	context.commit('setRegisterError',"");
 	context.commit('setLoginError',"");
-	context.dispatch('getFollowing');
-	context.dispatch('getFollowers');
+	// context.dispatch('getFollowing');
+	// context.dispatch('getFollowers');
+  router.push('/');
       }).catch(error => {
 	context.commit('setUser',{});
 	context.commit('setToken','');
@@ -128,6 +129,7 @@ export default new Vuex.Store({
 	context.commit('setRegisterError',"Sorry, your request failed. We will look into it.");
       });
     },
+
     login(context,user) {
       return axios.post("/api/login",user).then(response => {
 	context.commit('setUser', response.data.user);
