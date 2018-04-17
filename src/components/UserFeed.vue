@@ -4,7 +4,7 @@
       <form v-on:submit.prevent="tweet" class="tweetForm">
 	<textarea v-model="text" placeholder=""/><br/>
 	<div class="buttonWrap">
-	  <button class="primary" type="submit">Tweet</button>
+	  <button class="primary" type="submit">Post</button>
 	</div>
       </form>
     </div>

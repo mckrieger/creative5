@@ -1,12 +1,21 @@
 <template>
 <div class="column">
-<form v-on:submit.prevent="register">
+<form enctype="multipart/form-data" v-on:submit.prevent="register">
   <p> Create an account</p>
   <input class="wide" v-model="name" placeholder="First and Last Name"><br/>
   <input class="wide" v-model="username" placeholder="Username"><br/>
   <input class="wide" v-model="email" placeholder="Email Address"><br/>
   <input class="wide" type="password" v-model="password" placeholder="Password"><br/>
 
+         <div v-bind:style="{inactive: !imagePreview, active:imagePreview }">
+           <img class="preview" v-bind:src="imageData">
+         </div>
+           <div class="icon">
+             <label for="file-input">
+               <i class="far fa-image" aria-hidden="true"></i>
+             </label>
+             <input id="file-input" type="file" v-on:change="previewImage" accept="image/*" class="input-file">
+           </div>
 
   <p class="detail">Here at Roomie, you can look for roommates, give reviews, or just browse what's out there.<br/>If you are looking for a roommate, we suggest you check the box below so people know more about you.</p>
   <label for="extra">Fill out extra info? </label><input id="extra" type="checkbox" v-model="extra"></input>
@@ -17,6 +26,9 @@
       <button id="male" v-on:click="gender = 'male'" v-bind:class="{ selected: gender == 'male' }" >Male</button> <button id="female" v-on:click="gender = 'female'" v-bind:class="{ selected: gender == 'female'}">Female</button>
     </div>
   <label for="age">How old are you?</label>
+
+
+
   <p>{{age}}</p><input id="clean" type="range" min="17" max="80" value="23" step="1" class="wide" v-model="age" ></input><br/>
     <div id="snore">
       <label for="snore">Do you snore? </label><input id="snore" type="checkbox" v-model="snore"></input><br/>
@@ -57,6 +69,9 @@
        quiet: '',
        expectation: '',
        other: '',
+       imageData: '',
+       imagePreview: false,
+       file: '',
      }
    },
    computed: {
@@ -68,8 +83,8 @@
      register: function() {
        this.$store.dispatch('register',{
 	      username: this.username,
-         email: this.email,
-          password: this.password,
+           email: this.email,
+           password: this.password,
 	         name: this.name,
            gender: this.gender,
            age: this.age,
@@ -81,11 +96,29 @@
            quiet: this.quiet,
            expectation: this.expectation,
            other: this.other,
+           image: this.file,
        });
      },
      updateSlider: function(val) {
           document.getElementById('textInput').value=val;
         },
+      previewImage: function(event) {
+        const input = event.target;
+        // Ensure that you have a file before attempting to read it
+        if (input.files && input.files[0]) {
+         this.file = input.files[0];
+          // create a new FileReader to read this image and convert to base64 format
+          const reader = new FileReader();
+          // Define a callback function to run, when FileReader finishes its job
+          reader.onload = (e) => {
+            // Read image as base64 and set to imageData
+           this.imageData = e.target.result;
+           this.imagePreview = true;
+          }
+          // Start the reader job - read file as a data url (base64 format)
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
    }
  }
 </script>

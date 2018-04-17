@@ -93,6 +93,6 @@
  }
 
  #content {
- padding-bottom:3rem;
+ padding-bottom:60px;
  }
 </style>

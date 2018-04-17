@@ -107,7 +107,26 @@ export default new Vuex.Store({
     },
     // Registration, Login //
     register(context,user) {
-      return axios.post("/api/users",user).then(response => {
+      let headers = {headers: {'Content-Type': 'multipart/form-data'}}
+      let formData = new FormData();
+      formData.append('email', user.email);
+      formData.append('password', user.password);
+      formData.append('name', user.name);
+      formData.append('username', username.name);
+      formData.append('gender', user.gender);
+      formData.append('age', user.age);
+      formData.append('snoring', user.snoring);
+      formData.append('time', user.time);
+      formData.append('extra', user.extra);
+      formData.append('clean', user.clean);
+      formData.append('hobbies', user.hobbies);
+      formData.append('quiet', user.quiet);
+      formData.append('expectation', user.expectation);
+      formData.append('other', user.other);
+      if (user.image) {
+        formData.append('image', user.image);
+      }
+      return axios.post("/api/users", formData, headers).then(response => {
 	context.commit('setUser', response.data.user);
 	context.commit('setToken',response.data.token);
 	context.commit('setRegisterError',"");

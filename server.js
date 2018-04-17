@@ -26,6 +26,19 @@ if (jwtSecret === undefined) {
   process.exit();
 }
 
+
+// multer setup
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'static/uploads')
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${req.userID}-${Date.now()}-${file.originalname}`);
+  }
+});
+const upload = multer({storage: storage});
+
 // Verify the token that a client gives us.
 // This is setup as middleware, so it can be passed as an additional argument to Express after
 // the URL in any route. This will restrict access to only those clients who possess a valid token.
@@ -73,7 +86,14 @@ app.post('/api/login', (req, res) => {
 
 // Registration //
 
-app.post('/api/users', (req, res) => {
+app.post('/api/users', upload.single('image'), (req, res) => {
+
+  let path = ''
+  if(req.file){
+    console.log('Image path added')
+    path= req.file.path;
+  }
+  console.log(req.body.username);
   if (!req.body.email || !req.body.password || !req.body.username || !req.body.name)
     return res.status(400).send();
   knex('users').where('email',req.body.email).first().then(user => {
@@ -89,6 +109,8 @@ app.post('/api/users', (req, res) => {
     }
     return bcrypt.hash(req.body.password, saltRounds);
   }).then(hash => {
+
+
     return knex('users').insert({email: req.body.email,
          hash: hash,
          username:req.body.username,
@@ -96,6 +118,7 @@ app.post('/api/users', (req, res) => {
          role: 'user',
          gender: req.body.gender,
          age: req.body.age,
+         image: path,
          snoring: req.body.snoring,
          time: req.body.time,
          extra: req.body.extra,

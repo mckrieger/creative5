@@ -15,7 +15,7 @@
 
  #footer {
   list-style-type: none;
-  height: 10vh;
+  height: 60px;
   width: 100vw;
   bottom:0;
   margin-top:0px;
