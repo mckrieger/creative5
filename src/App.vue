@@ -25,7 +25,7 @@
      font-size: 18px;
      position: relative;
       margin: 0;
-      padding-bottom: 1rem;
+      margin-bottom: 0rem;
       min-height: 100%;
      background-color:#FFF;
      font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -36,6 +36,14 @@
  html {
    height: 100%;
    box-sizing: border-box;
+   margin:0;
+ }
+
+ .feed {
+     width: 600px;
+ }
+ .feed img {
+     width: 100%;
  }
 
  button {

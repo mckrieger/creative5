@@ -1,8 +1,10 @@
 <template>
   <div>
     <div v-for="item in feed" class="item">
-      <p class="idline"><span class="user">{{item.name}}</span><router-link :to="{ name: 'UserPage', params: {userID: item.userID}}"><span class="handle">@{{item.username}}</span></router-link><span class="time">{{item.created | since}}</span></p>
-      <p v-html="formatTweet(item.tweet)" class="tweet"></p>
+      <p class="idline"><span class="user">{{item.name}}</span><router-link :to="{ name: 'UserPage', params: {userID: item.user_id}}"><span class="handle">@{{item.username}}</span></router-link><span class="time">{{item.created | since}}</span></p>
+      <p  class="post">{{item.description}}</p>
+      <img v-bind:src="item.image"/>
+
     </div>
   </div>
 </template>
@@ -37,7 +39,7 @@
      },
    },
    methods: {
-     formatTweet: function(text) {
+     formatPost: function(text) {
        return linkify(text, {
          defaultProtocol: 'https'
        });
@@ -52,7 +54,7 @@
      border-bottom: 1px solid #ddd;
      padding: 10px;
  }
- .tweet {
+ .post {
      margin-top: 0px;
  }
  .idline {

@@ -82,7 +82,7 @@
    methods: {
      register: function() {
        this.$store.dispatch('register',{
-	      username: this.username,
+	         username: this.username,
            email: this.email,
            password: this.password,
 	         name: this.name,

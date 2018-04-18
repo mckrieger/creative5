@@ -158,7 +158,7 @@ app.get('/api/me', verifyToken, (req,res) => {
 app.get('/api/users/:id', (req, res) => {
   let id = parseInt(req.params.id);
   // get user record
-  knex('users').where('id',id).first().select('username','name','id').then(user => {
+  knex('users').where('id',id).first().select('username','name','id','gender', 'age', 'snoring', 'time','extra', 'clean', 'hobbies', 'quiet','expectation','other','image').then(user => {
     res.status(200).json({user:user});
   }).catch(error => {
     res.status(500).json({ error });
@@ -177,33 +177,36 @@ app.delete('/api/users/:id', (req, res) => {
 });
 */
 
-// User Tweets //
+// User posts //
 
-app.get('/api/users/:id/reviews', (req, res) => {
+app.get('/api/users/:id/posts', (req, res) => {
   let id = parseInt(req.params.id);
-  knex('users').join('reviews','users.id','reviews.user_id')
+  knex('users').join('posts','users.id','posts.user_id')
     .where('users.id',id)
     .orderBy('created','desc')
-    .select('rating','username','name','created').then(reviews => {
-      res.status(200).json({reviews:reviews});
+    .select('rating','username','name','created').then(posts => {
+      res.status(200).json({posts:posts});
     }).catch(error => {
       console.log(error);
       res.status(500).json({ error });
     });
 });
 
-app.post('/api/users/:id/reviews', verifyToken, (req, res) => {
+app.post('/api/users/:id/posts', verifyToken, upload.single('image'), (req, res) => {
   let id = parseInt(req.params.id);
   if (id !== req.userID) {
     res.status(403).send();
     return;
   }
+  let path = ''
+  if (req.file)
+    path = req.file.path;
   knex('users').where('id',id).first().then(user => {
-    return knex('reviews').insert({user_id: id, text:req.body.text, created: new Date()});
+    return knex('posts').insert({user_id: id, description:req.body.post, created: new Date(), image:path});
   }).then(ids => {
-    return knex('reviews').where('id',ids[0]).first();
-  }).then(reviews => {
-    res.status(200).json({reviews:reviews});
+    return knex('posts').where('id',ids[0]).first();
+  }).then(posts => {
+    res.status(200).json({posts:posts});
     return;
   }).catch(error => {
     console.log(error);
@@ -212,12 +215,12 @@ app.post('/api/users/:id/reviews', verifyToken, (req, res) => {
 });
 
 /*
-app.delete('/api/users/:id/tweets/:tweetId', (req, res) => {
+app.delete('/api/users/:id/posts/:postId', (req, res) => {
   let id = parseInt(req.params.id);
-  let tweetId = parseInt(req.params.tweetId);
+  let postId = parseInt(req.params.postId);
   knex('users').where('id',id).first().then(user => {
-    return knex('tweets').where({'user_id':id,id:tweetId}).first().del();
-  }).then(tweets => {
+    return knex('posts').where({'user_id':id,id:postId}).first().del();
+  }).then(posts => {
     res.sendStatus(200);
   }).catch(error => {
     console.log(error);
@@ -226,9 +229,9 @@ app.delete('/api/users/:id/tweets/:tweetId', (req, res) => {
 });
 */
 
-// All Tweets //
+// All posts //
 
-app.get('/api/reviews/search', (req, res) => {
+app.get('/api/posts/search', (req, res) => {
   if (!req.query.keywords)
     return res.status(400).send();
   let offset = 0;
@@ -237,161 +240,63 @@ app.get('/api/reviews/search', (req, res) => {
   let limit = 50;
   if (req.query.limit)
     limit = parseInt(req.query.limit);
-  knex('users').join('reviews','users.id','reviews.user_id')
+  knex('users').join('posts','users.id','posts.user_id')
     .whereRaw("MATCH (text) AGAINST('" + req.query.keywords + "')")
     .orderBy('created','desc')
     .limit(limit)
     .offset(offset)
-    .select('text','username','name','created','users.id as userID').then(reviews => {
-      res.status(200).json({reviews:reviews});
+    .select('text','username','name','created','image','users.id as userID').then(posts => {
+      res.status(200).json({posts:posts});
     }).catch(error => {
       console.log(error);
       res.status(500).json({ error });
     });
 });
 
-// app.get('/api/tweets/hash/:hashtag', (req, res) => {
-//   let offset = 0;
-//   if (req.query.offset)
-//     offset = parseInt(req.query.offset);
-//   let limit = 50;
-//   if (req.query.limit)
-//     limit = parseInt(req.query.limit);
-//   knex('users').join('tweets','users.id','tweets.user_id')
-//     .whereRaw("tweet REGEXP '^#" + req.params.hashtag + "' OR tweet REGEXP ' #" + req.params.hashtag + "'")
-//     .orderBy('created','desc')
-//     .limit(limit)
-//     .offset(offset)
-//     .select('tweet','username','name','created','users.id as userID').then(tweets => {
-//       res.status(200).json({tweets:tweets});
-//     }).catch(error => {
-//       console.log(error);
-//       res.status(500).json({ error });
-//     });
-// });
 
-// // Followers //
-//
-// // follow someone
-// app.post('/api/users/:id/follow', verifyToken, (req,res) => {
-//   // id of the person who is following
-//   let id = parseInt(req.params.id);
-//   // check this id
-//   if (id !== req.userID) {
-//     res.status(403).send();
-//     return;
-//   }
-//   // id of the person who is being followed
-//   let follows = req.body.id;
-//   // make sure both of these users exist
-//   knex('users').where('id',id).first().then(user => {
-//     return knex('users').where('id',follows).first();
-//   }).then(user => {
-//     // make sure entry doesn't already exist
-//     return knex('followers').where({user_id:id,follows_id:follows}).first();
-//   }).then(entry => {
-//     if (entry === undefined)
-//       // insert the entry in the followers table
-//       return knex('followers').insert({user_id: id, follows_id:follows});
-//     else
-//       return true;
-//   }).then(ids => {
-//     res.sendStatus(200);
-//     return;
-//   }).catch(error => {
-//     console.log(error);
-//     res.status(500).json({ error });
-//   });
-// });
-//
-// // unfollow someone
-// app.delete('/api/users/:id/follow/:follower', verifyToken, (req,res) => {
-//   // id of the person who is following
-//   let id = parseInt(req.params.id);
-//   // check this id
-//   if (id !== req.userID) {
-//     res.status(403).send();
-//     return;
-//   }
-//   // id of the person who is being followed
-//   let follows = parseInt(req.params.follower);
-//   // make sure both of these users exist
-//   knex('users').where('id',id).first().then(user => {
-//     return knex('users').where('id',follows).first();
-//   }).then(user => {
-//     // delete the entry in the followers table
-//     return knex('followers').where({'user_id':id,follows_id:follows}).first().del();
-//   }).then(ids => {
-//     res.sendStatus(200);
-//     return;
-//   }).catch(error => {
-//     console.log(error);
-//     res.status(500).json({ error });
-//   });
-// });
-//
-// // get list of people you are following
-// app.get('/api/users/:id/follow', (req,res) => {
-//   // id of the person we are interested in
-//   let id = parseInt(req.params.id);
-//   // get people this person is following
-//   knex('users').join('followers','users.id','followers.follows_id')
-//     .where('followers.user_id',id)
-//     .select('username','name','users.id').then(users => {
-//       res.status(200).json({users:users});
-//     }).catch(error => {
-//       console.log(error);
-//       res.status(500).json({ error });
-//     });
-// });
-//
-// // get list of people who are following you
-// app.get('/api/users/:id/followers', (req,res) => {
-//   // id of the person we are interested in
-//   let id = parseInt(req.params.id);
-//   // get people who are following of this person
-//   knex('users').join('followers','users.id','followers.user_id')
-//     .where('followers.follows_id',id)
-//     .select('username','name','users.id').then(users => {
-//       res.status(200).json({users:users});
-//     }).catch(error => {
-//       console.log(error);
-//       res.status(500).json({ error });
-//     });
-// });
-//
-// // get the tweets of those you are following
+// // get the posts of those you are following
 // // use limit to limit the results to a certain number
 // // use offset to provide an offset into the results (e.g., starting at results number 10)
-// app.get('/api/users/:id/feed', (req,res) => {
-//   // id of the person we are interested in
-//   let id = parseInt(req.params.id);
-//   // offset into the results
-//   let offset = 0;
-//   if (req.query.offset)
-//     offset = parseInt(req.query.offset);
-//   // number of results we should return
-//   let limit = 50;
-//   if (req.query.limit)
-//     limit = parseInt(req.query.limit);
-//   // get people this person is following
-//   knex('followers').where('followers.user_id',id).then(followed => {
-//     // get tweets from this users plus people this user follows
-//     let following = followed.map(entry=>entry.follows_id);
-//     following.push(id);
-//     return knex('tweets').join('users','tweets.user_id','users.id')
-//       .whereIn('tweets.user_id',following)
-//       .orderBy('created','desc')
-//       .limit(limit)
-//       .offset(offset)
-//       .select('tweet','username','name','created','users.id as userID');
-//   }).then(tweets => {
-//     res.status(200).json({tweets:tweets});
-//   }).catch(error => {
-//     console.log(error);
-//     res.status(500).json({ error });
-//   });
-// });
+app.get('/api/users/:id/feed', (req,res) => {
+  // id of the person we are interested in
+  let id = parseInt(req.params.id);
+  // offset into the results
+  let offset = 0;
+  if (req.query.offset)
+    offset = parseInt(req.query.offset);
+  // number of results we should return
+  let limit = 50;
+  if (req.query.limit)
+    limit = parseInt(req.query.limit);
 
+  knex('posts').join('users','posts.user_id', 'users.id')
+  .orderBy('created','desc')
+  .limit(limit)
+  .offset(offset).select('description','posts.id as postID','posts.image as image','created','user_id', 'users.name as name', 'users.username as username')
+  .then(posts=> {
+    res.status(200).json({posts:posts});
+  }).catch(error => {
+    console.log(error);
+    res.status(500).json({ error });
+  });
+});
+
+//get users near you
+app.get('/api/users', (req,res) => {
+  let offset = 0;
+  if (req.query.offset)
+    offset = parseInt(req.query.offset);
+  let limit = 50;
+  if (req.query.limit)
+    limit = parseInt(req.query.limit);
+  knex('users').limit(limit).offset(offset).orderBy('id','desc')
+    .select('name','username','image', 'id as userID')
+    .then(users => {
+  res.status(200).json({users:users});
+    }).catch(error => {
+      console.log(error);
+      res.status(500).json({ error });
+    });
+});
 
 app.listen(3000, () => console.log('Server listening on port 3000!'));

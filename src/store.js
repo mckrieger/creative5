@@ -16,15 +16,14 @@ export default new Vuex.Store({
     loginError: '',
     registerError: '',
     feed: [],
+    users: [],
     userView: [],
     feedView: [],
-    following: [],
-    followers: [],
-    followingView: [],
-    followersView: [],
+    showing: 'people',
   },
   getters: {
     user: state => state.user,
+    showing: state => state.showing,
     getToken: state => state.token,
     loggedIn: state => {
       if (state.token === '')
@@ -34,24 +33,16 @@ export default new Vuex.Store({
     loginError: state => state.loginError,
     registerError: state => state.registerError,
     feed: state => state.feed,
+    users: state => state.users,
     feedView: state => state.feedView,
     userView: state => state.userView,
-    following: state => state.following,
-    followers: state => state.followers,
-    isFollowing: state => (id) => {
-      return state.following.reduce((val,item) => {
-	if (item.id === id)
-	  return true;
-	else
-	  return val;
-      },false);
-    },
-    followingView: state => state.followingView,
-    followersView: state => state.followersView,
   },
   mutations: {
     setUser (state, user) {
       state.user = user;
+    },
+    setShowing (state, showing) {
+      state.showing = showing;
     },
     setToken (state, token) {
       state.token = token;
@@ -70,23 +61,14 @@ export default new Vuex.Store({
     setFeed (state, feed) {
       state.feed = feed;
     },
+    setUsers (state, users) {
+      state.users = users;
+    },
     setUserView (state, user) {
       state.userView = user;
     },
     setFeedView (state, feed) {
       state.feedView = feed;
-    },
-    setFollowing (state, following) {
-      state.following = following;
-    },
-    setFollowers (state, followers) {
-      state.followers = followers;
-    },
-    setFollowingView (state, following) {
-      state.followingView = following;
-    },
-    setFollowersView (state, followers) {
-      state.followersView = followers;
     },
   },
   actions: {
@@ -112,7 +94,7 @@ export default new Vuex.Store({
       formData.append('email', user.email);
       formData.append('password', user.password);
       formData.append('name', user.name);
-      formData.append('username', username.name);
+      formData.append('username', user.username);
       formData.append('gender', user.gender);
       formData.append('age', user.age);
       formData.append('snoring', user.snoring);
@@ -131,8 +113,6 @@ export default new Vuex.Store({
 	context.commit('setToken',response.data.token);
 	context.commit('setRegisterError',"");
 	context.commit('setLoginError',"");
-	// context.dispatch('getFollowing');
-	// context.dispatch('getFollowers');
   router.push('/');
       }).catch(error => {
 	context.commit('setUser',{});
@@ -155,8 +135,6 @@ export default new Vuex.Store({
 	context.commit('setToken',response.data.token);
 	context.commit('setRegisterError',"");
 	context.commit('setLoginError',"");
-	context.dispatch('getFollowing');
-	context.dispatch('getFollowers');
       }).catch(error => {
 	context.commit('setUser',{});
 	context.commit('setToken','');
@@ -184,95 +162,68 @@ export default new Vuex.Store({
 	console.log("getUser failed:",err);
       });
     },
-    // get tweets of a user, must supply {id:id} of user you want to get tweets for
-    getUserTweets(context,user) {
-      return axios.get("/api/users/" + user.id + "/tweets").then(response => {
-	context.commit('setFeedView',response.data.tweets);
+    // get posts of a user, must supply {id:id} of user you want to get posts for
+    getUserposts(context,user) {
+      return axios.get("/api/users/" + user.id + "/posts").then(response => {
+	context.commit('setFeedView',response.data.posts);
       }).catch(err => {
-	console.log("getUserTweets failed:",err);
+	console.log("getUserposts failed:",err);
       });
     },
-    // Tweeting //
-    addTweet(context,tweet) {
-      axios.post("/api/users/" + context.state.user.id + "/tweets",tweet,getAuthHeader()).then(response => {
-	return context.dispatch('getFeed');
+    // posting //
+    addPost(context,post) {
+      // setup headers
+            let headers = getAuthHeader();
+            headers.headers['Content-Type'] = 'multipart/form-data'
+            // setup form data
+            let formData = new FormData();
+            formData.append('post',post.post);
+            if (post.image) {
+             formData.append('image',post.image);
+            }
+            axios.post("/api/users/" + context.state.user.id + "/posts",formData,headers).then(response => {	return context.dispatch('getFeed');
       }).catch(err => {
-	console.log("addTweet failed:",err);
+	console.log("addpost failed:",err);
       });
     },
     // Searching //
     doSearch(context,keywords) {
-      return axios.get("/api/tweets/search?keywords=" + keywords).then(response => {
-	context.commit('setFeed',response.data.tweets);
+      return axios.get("/api/posts/search?keywords=" + keywords).then(response => {
+	context.commit('setFeed',response.data.posts);
       }).catch(err => {
 	console.log("doSearch failed:",err);
       });
     },
     doHashTagSearch(context,hashtag) {
-      return axios.get("/api/tweets/hash/" + hashtag).then(response => {
-	context.commit('setFeed',response.data.tweets);
+      return axios.get("/api/posts/hash/" + hashtag).then(response => {
+	context.commit('setFeed',response.data.posts);
       }).catch(err => {
 	console.log("doHashTagSearch failed:",err);
       });
     },
-    // Followers //
 
-    // follow someone, must supply {id: id} of user you want to follow
-    follow(context,user) {
-      return axios.post("/api/users/" + context.state.user.id + "/follow",user,getAuthHeader()).then(response => {
-	context.dispatch('getFollowing');
-      }).catch(err => {
-	console.log("follow failed:",err);
-      });
+    updateShowing(context, showing){
+      context.commit('setShowing', showing);
     },
-    // unfollow someone, must supply {id: id} of user you want to unfollow
-    unfollow(context,user) {
-      return axios.delete("/api/users/" + context.state.user.id + "/follow/" + user.id,getAuthHeader()).then(response => {
-	context.dispatch('getFollowing');
-      }).catch(err => {
-	console.log("unfollow failed:",err);
-      });
-    },
-    // get list of people you are following
-    getFollowing(context) {
-      return axios.get("/api/users/" + context.state.user.id + "/follow").then(response => {
-	context.commit('setFollowing',response.data.users);
-      }).catch(err => {
-	console.log("following failed:",err);
-      });
-    },
-    // get list of people who are following you
-    getFollowers(context) {
-      return axios.get("/api/users/" + context.state.user.id + "/followers").then(response => {
-	context.commit('setFollowers',response.data.users);
-      }).catch(err => {
-	console.log("following failed:",err);
-      });
-    },
-    // get tweets of people you follow
+
+    // get posts of people near you
     getFeed(context) {
       return axios.get("/api/users/" + context.state.user.id + "/feed").then(response => {
-	context.commit('setFeed',response.data.tweets);
+	context.commit('setFeed',response.data.posts);
       }).catch(err => {
 	console.log("getFeed failed:",err);
       });
     },
-    // get list of people you are following
-    getFollowingView(context,user) {
-      return axios.get("/api/users/" + user.id + "/follow").then(response => {
-	context.commit('setFollowingView',response.data.users);
+
+    //get users near your
+    getUsers(context) {
+      return axios.get("/api/users").then(response => {
+        context.commit('setUsers', response.data.users);
       }).catch(err => {
-	console.log("following failed:",err);
+        console.log("getUsers failed:", err);
       });
     },
-    // get list of people who are following you
-    getFollowersView(context,user) {
-      return axios.get("/api/users/" + user.id + "/followers").then(response => {
-	context.commit('setFollowersView',response.data.users);
-      }).catch(err => {
-	console.log("following failed:",err);
-      });
-    },
+
 
   }
 });

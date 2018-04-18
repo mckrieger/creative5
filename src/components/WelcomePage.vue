@@ -16,8 +16,7 @@
         and he gets the nastiest roommates." <br/>--Elated User</p>
     </div>
     <div id="buttons">
-      <router-link :to="{name: 'RegisterPage'}"><button class="secondary" id="registerButton">Sign Up</button></router-link>
-      <router-link :to="{name: 'HomePage'}"><button class="secondary" id="signInButton">Log In</button></router-link>
+      <router-link :to="{name: 'RegisterPage'}"><button class="secondary" id="registerButton">Sign Up Today</button></router-link>
     </div>
   </div>
 </template>

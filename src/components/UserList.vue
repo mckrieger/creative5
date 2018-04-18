@@ -1,7 +1,13 @@
 <template>
-  <div>
-    <div v-for="user in users">
-      <p><span class="user">{{user.name}}</span><router-link :to="{ name: 'UserPage', params: {userID: user.id}}"><span class="handle">@{{user.username}}</span></router-link></p>
+  <div id="userFeed">
+    <div v-for="user in users" class="row">
+      <div class='pics'><img v-bind:src="user.image"/></div>
+
+        <span class="user">{{user.name}}</span>
+        <router-link :to="{ name: 'UserPage', params: {userID: user.userID}}">
+          <span class="handle">@{{user.username}}</span>
+        </router-link><br/>
+        <hr/>
     </div>
   </div>
 </template>
@@ -22,6 +28,27 @@
  .user {
      font-weight: bold;
      margin-right: 10px;
+ }
+ img {
+    width:80px;
+    display: block;
+ }
+
+ .pics {
+    width: 80px;
+    display:inline;
+ }
+
+ #userFeed {
+    display:block;
+    width: 600px;
+    margin: auto;
+ }
+
+ .row {
+  display: inline;
+  width: 100%;
+  padding-top: 15px;
  }
  .handle {
      margin-right: 10px;

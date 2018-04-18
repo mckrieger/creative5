@@ -33,7 +33,7 @@ a.footer:visited{
 }
 
 p.footer {
-  padding-bottom:15px;
+  padding-bottom:0px;
 }
 
 </style>
