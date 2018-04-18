@@ -3,10 +3,7 @@
    <div id="header">
     <ul id="menu">
       <li><router-link to="/"><img src="/static/images/Roomie Logo6.png"/></router-link></li>
-      <li><form v-on:submit.prevent="search">
-	<input v-model="keywords" placeholder="Search">
-	<a href="#" v-on:click="search" class="search"><i class="fas fa-search"></i></a>
-      </form></li>
+
       <li class="right" v-if="loggedIn">
 	<router-link :to="{ name: 'UserPage', params: {userID: user.id}}">{{user.username}}</router-link> <a @click="logout" href="#">Logout</a></p>
       </li>
